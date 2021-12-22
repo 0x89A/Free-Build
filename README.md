@@ -15,9 +15,11 @@ The bare minimum resources will be required in the player's inventory for upgrad
 ```json
 {
   "Chat Command": "freebuild",
-  "Require Chat Command": true
+  "Require Chat Command": true,
+  "Deployables Are Free": true
 }
 ```
 
 **Chat Command** - The command used to toggle free building on and off.
 **Require Chat Command** - If set to false, the player will only need the permission `freebuild.allow` in order to build for free, and will not have to use the chat command to toggle on and off.
+**Deployables Are Free** - If set to true, deployables are also free and do not use/remove the item from the player's inventory when placed.
