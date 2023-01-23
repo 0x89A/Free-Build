@@ -11,20 +11,15 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("Free Build", "0x89A", "2.1.0")]
+    [Info("Free Build", "0x89A", "2.1.1")]
     [Description("Allows building, upgrading and placing deployables for free")]
     class FreeBuild : CovalencePlugin
     {
         private const string usePerm = "freebuild.allow";
 
+        private const int _itemStartPosition = 24;
+
         private readonly HashSet<BasePlayer> _activePlayers = new HashSet<BasePlayer>();
-        
-        private readonly Dictionary<string, int> _items = new Dictionary<string, int>()
-        {
-            ["metal.fragments"] = 100000,
-            ["stones"] = 100000,
-            ["wood"] = 100000,
-        };
 
         private readonly string[] _resourceItemShortnames =
         {
@@ -66,13 +61,23 @@ namespace Oxide.Plugins
 
         #region -Hooks-
 
-        private void OnInventoryNetworkUpdate(PlayerInventory inventory, ItemContainer container, ProtoBuf.UpdateItemContainer updatedItemContainer, PlayerInventory.Type inventoryType, bool sendToEveryone)
+        private void OnEntitySaved(BasePlayer player, BaseNetworkable.SaveInfo saveInfo)
         {
-            if (inventory.baseEntity != null && inventory.baseEntity.IsConnected && !IsAllowed(inventory.baseEntity))
+            if (!IsAllowed(player))
             {
                 return;
             }
-            
+
+            AddItems(saveInfo.msg.basePlayer.inventory.invMain);
+        }
+
+        private void OnInventoryNetworkUpdate(PlayerInventory inventory, ItemContainer container, ProtoBuf.UpdateItemContainer updatedItemContainer, PlayerInventory.Type inventoryType, bool sendToEveryone)
+        {
+            if (inventory != null && inventory.baseEntity != null && !IsAllowed(inventory.baseEntity))
+            {
+                return;
+            }
+
             if (inventoryType == PlayerInventory.Type.Main)
             {
                 AddItems(updatedItemContainer.container[0]);
@@ -166,7 +171,7 @@ namespace Oxide.Plugins
                 containerData.contents.Add(item.Save());
             }
             
-            containerData.slots = 24 + items.Count;
+            containerData.slots = _itemStartPosition + items.Count;
         }
         
         private List<Item> GetItems()
@@ -178,7 +183,7 @@ namespace Oxide.Plugins
 
             _resourceItems.Clear();
             
-            int position = 24;
+            int position = _itemStartPosition;
             foreach (string shortname in _resourceItemShortnames)
             {
                 Item item = ItemManager.CreateByName(shortname, 10000);
@@ -190,7 +195,7 @@ namespace Oxide.Plugins
                 item.position = position++;
                 _resourceItems.Add(item);
             }
-            
+
             return _resourceItems;
         }
 
