@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("Free Build", "0x89A", "2.1.1")]
+    [Info("Free Build", "0x89A", "2.1.2")]
     [Description("Allows building, upgrading and placing deployables for free")]
     class FreeBuild : CovalencePlugin
     {
@@ -106,7 +106,7 @@ namespace Oxide.Plugins
 
         object OnPayForPlacement(BasePlayer player, Planner planner, Construction construction)
         {
-            if (IsAllowed(player) && DeployableCheck(construction.deployable))
+            if (IsAllowed(player) && DeployableCheck(planner))
             {
                 return true;
             }
@@ -152,9 +152,9 @@ namespace Oxide.Plugins
             return _config.requireChat ? _activePlayers.Contains(player) : permission.UserHasPermission(player.UserIDString, usePerm);
         }
 
-        private bool DeployableCheck(Deployable deployable)
+        private bool DeployableCheck(Planner planner)
         {
-            return !(deployable != null && !_config.freeDeployables && deployable.fullName.Contains("deployed"));
+            return _config.freeDeployables || !planner.isTypeDeployable;
         }
         
         private void AddItems(ProtoBuf.ItemContainer containerData)
